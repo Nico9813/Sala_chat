@@ -1,24 +1,51 @@
-import React, { useState } from 'react';
+import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-function App() {
+import { w3cwebsocket as W3CWebSocket } from "websocket";
 
-  const [ texto, setTexto ] = useState("1111");
+const client = new W3CWebSocket('ws://127.0.0.1:8000');
 
+class App extends React.Component {
 
+  state = {
+    texto: ""
+  }
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Texto: {texto}.
+  componentWillMount(){
+  
+    client.onopen = () => {
+      
+    };
+
+    client.onmessage = (message) => {
+      const mensaje = JSON.stringify(message.data);
+      this.setState({texto: mensaje})
+    };
+  }
+
+  actualizarTexto(nuevoTexto : any){
+    client.onopen = () => {
+      client.send(JSON.stringify({ type: "CAMBIAR_TEXTO", data: nuevoTexto }))
+    };
+    this.setState({ texto: nuevoTexto })
+  }
+
+  render(){
+    return (
+      <div className="App">
+        <header className="App-header">
+          <img src={logo} className="App-logo" alt="logo" />
+          <p>
+            Texto: {this.state.texto}.
         </p>
-        <button onClick={()=>setTexto("asd")}>Cambiar texto</button>
-      </header>
-    </div>
-  );
+          <button onClick={() => this.actualizarTexto("asd")}>Cambiar texto</button>
+        </header>
+      </div>
+    );
+  }
+
+  
 }
 
 export default App;
