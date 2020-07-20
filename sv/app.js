@@ -31,8 +31,7 @@ wsServer.on('request', function (request) {
         console.log("[Mensaje recibido] - %s ( %s )", mensaje.type, mensaje.data)
         switch (mensaje.type){
             case CAMBIAR_TEXTO:
-                const data = JSON.stringify({data: mensaje.data});
-                sendMessage(JSON.stringify(data));
+                sendMessage(mensaje.data);
                 break;
             default:
                 console.log("Tipo de mensaje desonocido");

@@ -9,7 +9,9 @@ const client = new W3CWebSocket('ws://127.0.0.1:8000');
 class App extends React.Component {
 
   state = {
-    texto: ""
+    texto: "asdasd",
+    mensajes: [],
+    mensajesRecibidos:[]
   }
 
   componentWillMount(){
@@ -19,33 +21,36 @@ class App extends React.Component {
     };
 
     client.onmessage = (message) => {
-      const mensaje = JSON.stringify(message.data);
-      this.setState({texto: mensaje})
+      this.setState({texto: message.data.toString()})
     };
   }
 
   actualizarTexto(nuevoTexto : any){
-    client.onopen = () => {
-      client.send(JSON.stringify({ type: "CAMBIAR_TEXTO", data: nuevoTexto }))
-    };
+    client.send(JSON.stringify({ type: "CAMBIAR_TEXTO", data: nuevoTexto }))
     this.setState({ texto: nuevoTexto })
+  }
+
+  renderMensajes() {
+    return(
+      <div>
+
+      </div>
+    )
   }
 
   render(){
     return (
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
           <p>
-            Texto: {this.state.texto}.
-        </p>
-          <button onClick={() => this.actualizarTexto("asd")}>Cambiar texto</button>
+            Documento compartido
+          </p>
+          <textarea style={{width: 500, height: 300}} onChange={(evt) => this.actualizarTexto(evt.target.value)} value={this.state.texto} />
+          {this.renderMensajes()}
         </header>
       </div>
     );
   }
-
-  
 }
 
 export default App;
