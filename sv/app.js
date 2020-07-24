@@ -12,6 +12,7 @@ const wsServer = new webSocketServer({
 const clients = {};
 
 CAMBIAR_TEXTO = "CAMBIAR_TEXTO";
+NUEVO_MENSAJE = "NUEVO_MENSAJE";
 
 const getUniqueID = () => {
     const s4 = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
@@ -21,7 +22,6 @@ const getUniqueID = () => {
 wsServer.on('request', function (request) {
     var userID = getUniqueID();
     console.log((new Date()) + ' Recieved a new connection from origin ' + request.origin + '.');
-    // You can rewrite this part of the code to accept only the requests from allowed origin
     const connection = request.accept(null, request.origin);
     clients[userID] = connection;
     console.log('connected: ' + userID + ' in ' + Object.getOwnPropertyNames(clients))
@@ -31,7 +31,10 @@ wsServer.on('request', function (request) {
         console.log("[Mensaje recibido] - %s ( %s )", mensaje.type, mensaje.data)
         switch (mensaje.type){
             case CAMBIAR_TEXTO:
-                sendMessage(mensaje.data);
+                sendMessage(JSON.stringify({type: CAMBIAR_TEXTO, data: mensaje.data}));
+                break;
+            case NUEVO_MENSAJE:
+                sendMessage(JSON.stringify({type: NUEVO_MENSAJE, emisor:mensaje.emisor, data: mensaje.data}));
                 break;
             default:
                 console.log("Tipo de mensaje desonocido");
@@ -42,6 +45,6 @@ wsServer.on('request', function (request) {
 
 const sendMessage = (json) => {
     Object.keys(clients).map((client) => {
-        clients[client].sendUTF(json);
+        clients[client].send(json);
     });
 }

@@ -2,8 +2,7 @@
   "name": "sv",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-  },
+  "dependencies": {},
   "scripts": {
     "start": "node app.js"
   }
