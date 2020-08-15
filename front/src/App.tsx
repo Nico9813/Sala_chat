@@ -6,22 +6,32 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 const client = new W3CWebSocket('ws://127.0.0.1:8000');
 
 interface IMensaje {
-  emisor: String,
-  contenido : String
+  emisor: string,
+  contenido : string
+}
+
+interface IProps {
+
+}
+
+interface IState {
+  texto : string,
+  mensajes : Array<IMensaje>,
+  nombre : string,
+  usuariosActuales : Map<string, string>,
+  mensajeActual : string
 }
 
 const CAMBIAR_TEXTO = "CAMBIAR_TEXTO";
 const NUEVO_MENSAJE = "NUEVO_MENSAJE";
 
-class App extends React.Component {
+const coloresDisponibles = ['pink','grey','blue']
+const colorEmisor = 'green'
+var indiceActual = 0
 
-  state = {
-    texto: "",
-    mensajes: [],
-    nombre: '',
-    usuariosActuales: [],
-    mensajeActual:'asd'
-  }
+class App extends React.PureComponent<IProps,IState> {
+
+  readonly state = { texto: '', mensajes:[], nombre:'', usuariosActuales: new Map<string,string>(), mensajeActual:''}
 
   componentDidMount(){
     client.onopen = () => {
@@ -30,7 +40,6 @@ class App extends React.Component {
 
     client.onmessage = (message) => {
       const data = JSON.parse(JSON.parse(JSON.stringify(message.data)))
-
       console.log(data)
 
       switch(data.type){
@@ -39,7 +48,12 @@ class App extends React.Component {
           break
         case NUEVO_MENSAJE:
           if(data.emisor != this.state.nombre){
-            this.setState({ ...this.state, mensajes: [...this.state.mensajes, {emisor: data.emisor, contenido: data.data }] })
+            if(!this.state.usuariosActuales.get(data.emisor)){
+              this.state.usuariosActuales.set(data.emisor, coloresDisponibles[indiceActual % coloresDisponibles.length])
+              indiceActual++
+              this.setState({ mensajes: [...this.state.mensajes, { emisor: data.emisor, contenido: 'El usuario ' + data.emisor + ' se unio a la conversacion' }] })
+            }
+            this.setState({mensajes: [...this.state.mensajes, {emisor: data.emisor, contenido: data.data}] })
           }
           break;
       }
@@ -54,30 +68,32 @@ class App extends React.Component {
   }
 
   enviarMensaje(mensajeNuevo: string) {
-    this.setState({ ...this.state, mensajes: [...this.state.mensajes, { emisor: this.state.nombre, contenido: mensajeNuevo }] })
+    this.state.usuariosActuales.set(this.state.nombre, colorEmisor)
+    this.setState({ ...this.state, mensajes: [...this.state.mensajes, { emisor: this.state.nombre, contenido: mensajeNuevo}] })
     client.send(JSON.stringify({ type: NUEVO_MENSAJE, emisor: this.state.nombre, data: mensajeNuevo }))
   }
 
   renderMensajes() {
     return(
-      <div style={{ minHeight: 400, background: 'white', borderColor: 'black', border: 1, borderRadius: 5, margin: 5 }}>
-        {this.state.mensajes.map( (mensaje : IMensaje, index : number) => 
-        <div>
+      <div style={{ height: 500, overflowY: 'scroll', position: 'sticky', background: 'white', borderColor: 'black', border: 1, borderRadius: 5, margin: 5 }}>
+        <div style={{bottom:0, height:'100%', width:'100%'}}>
+          {this.state.mensajes.map((mensaje: IMensaje, index: number) =>
             <div key={index}
               style={{
                 flexDirection: 'column',
                 color: 'black',
-                float: 'left',
+                backgroundColor: this.state.usuariosActuales.get(mensaje.emisor),
                 margin: 5,
+                position: 'inherit',
+                left: 10,
                 padding: 5,
                 borderRadius: 5,
                 fontSize: 15
               }}>
-              <b style={{color: (mensaje.emisor == this.state.nombre) ? 'green' : 'pink'}}>{mensaje.emisor}</b> : {mensaje.contenido}
+              <b>{mensaje.emisor}</b> : {mensaje.contenido}
             </div>
-            <br />
+          )}
         </div>
-        )}
       </div>
     )
   }
@@ -89,7 +105,7 @@ class App extends React.Component {
           
             <div style={{ flex: 9}}>
               <p>Documento compartido</p>
-              <textarea style={{ width: 800, height: 700 }} onChange={(evt) => this.actualizarTexto(evt.target.value)} value={this.state.texto} />
+              <textarea style={{ width: 800, height: 700, overflowY: 'scroll' }} onChange={(evt) => this.actualizarTexto(evt.target.value)} value={this.state.texto} />
             </div>
 
             <div style={{ flex: 3 }}>
