@@ -11,9 +11,6 @@ const wsServer = new webSocketServer({
 
 const clients = {};
 
-CAMBIAR_TEXTO = "CAMBIAR_TEXTO";
-NUEVO_MENSAJE = "NUEVO_MENSAJE";
-
 const getUniqueID = () => {
     const s4 = () => Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
     return s4() + s4() + '-' + s4();
@@ -28,23 +25,15 @@ wsServer.on('request', function (request) {
 
     connection.on('message', function (message) {
         const mensaje = JSON.parse(message.utf8Data);
-        console.log("[Mensaje recibido] - %s ( %s )", mensaje.type, mensaje.data)
-        switch (mensaje.type){
-            case CAMBIAR_TEXTO:
-                sendMessage(JSON.stringify({type: CAMBIAR_TEXTO, data: mensaje.data}));
-                break;
-            case NUEVO_MENSAJE:
-                sendMessage(JSON.stringify({type: NUEVO_MENSAJE, emisor:mensaje.emisor, data: mensaje.data}));
-                break;
-            default:
-                console.log("Tipo de mensaje desonocido");
-        }
+        console.log("[Mensaje recibido] - %s ( %s )", mensaje.type, JSON.stringify(mensaje.payload))
+        sendMessageExceptOrigin(JSON.stringify({ type: mensaje.type, payload: mensaje.payload }), connection);
     });
 
 });
 
-const sendMessage = (json) => {
+const sendMessageExceptOrigin = (json, origen) => {
     Object.keys(clients).map((client) => {
-        clients[client].send(json);
+        let clienteActual = clients[client];
+        if(clienteActual != origen) clienteActual.send(json);
     });
 }
