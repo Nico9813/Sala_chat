@@ -26,6 +26,10 @@ interface IState {
   mensajeActual : string
 }
 
+const COLOR_PRIMARIO = '#005eff'
+const COLOR_SECUNDARIO = 'black'
+const COLOR_FUENTE = 'black'
+
 const CAMBIAR_TEXTO = "CAMBIAR_TEXTO";
 const NUEVO_MENSAJE = "NUEVO_MENSAJE";
 const NUEVO_USUARIO = "NUEVO_USUARIO";
@@ -71,7 +75,7 @@ export const App = () => {
         setTexto(data.data)
         break
       case NUEVO_MENSAJE:
-        if (data.emisor != getNombre()) {
+        if (data.emisor !== getNombre()) {
           setMensajes([...mensajes, { emisor: data.emisor, contenido: data.data }])
         }
         break;
@@ -97,7 +101,7 @@ export const App = () => {
 
   let renderMensajes = () => {
     return (
-      <div style={{ height: '80%', overflowY: 'scroll', position: 'sticky', background: 'white', borderColor: 'black', border: 1, borderRadius: 5, margin: 5 }}>
+      <div style={{ maxHeight: 145, height: '100%', overflowY: 'scroll', position: 'sticky', background: 'white', borderColor: 'black', border: 1, borderRadius: 5, margin: 5 }}>
         <div style={{ bottom: 0, height: '100%', width: '100%' }}>
           {mensajes.map((mensaje: IMensaje, index: number) =>
             <div key={index}
@@ -121,81 +125,69 @@ export const App = () => {
   }
 
   let renderUsuarios = () => {
-      return(
-        <div>
-          {JSON.stringify(usuariosActuales)}
+
+    let usuariosRenderizables : Array<any> = []
+
+    usuariosActuales.forEach( (color, usuario) => {
+      usuariosRenderizables.push(
+      <div key={usuario} style={{display: 'flex',flexDirection: 'row'}}>
+        <div style={{ flex: 10}}>
+          <p>{usuario}</p>
         </div>
-      )
+          <div style={{ flex: 2, marginTop: 20,alignItems: 'center', alignContent: 'center'}}>
+            <div style={{  borderRadius: 5, height: 10, width: 10, backgroundColor: color}}></div>
+        </div>
+      </div>)
+    })
+
+    return(
+      <div>
+        {usuariosRenderizables}
+      </div>
+    )
   }
 
   return (
-    <div style={{display: 'flex'}}>
-      <div style={{backgroundColor:'black', borderRadius:10, padding:10, margin: 10, flex: 2, height:750}}>
+    <div style={{display: 'flex', backgroundColor:COLOR_SECUNDARIO}}>
+      <div style={{backgroundColor:COLOR_PRIMARIO, borderRadius:10, padding:10, margin: 10, flex: 2, height:750}}>
         <div style={{ display: 'flex', flexDirection: 'column', height:'100%'}}>
-          <div style={{ backgroundColor: 'white' , flex: 2, margin:10}}>
+          <div style={{ backgroundColor: COLOR_SECUNDARIO , flex: 2, margin:10}}>
             <div style={{display:'flex',alignItems: 'center', alignContent:'center', justifyContent: 'center', margin:10}}>
               <div>
-                {isAuthenticated && <p>{user.name}</p>}
+                {isAuthenticated && <p style={{color:COLOR_FUENTE}}>{user.name}</p>}
               </div>
               <div>
-                {isAuthenticated ? <div><BotonLogin /><button style={{ flex: 2, width: 100 }} onClick={() => identificar()}>Enviar</button></div> : <BotonLogin />}
+                {isAuthenticated ? <div><BotonLogout /><button style={{ flex: 2, width: 100 }} onClick={() => identificar()}>Enviar</button></div> : <BotonLogin />}
               </div>
             </div>
           </div>
-          <div style={{ backgroundColor: 'white', flex: 10, margin: 10}}>
+          <div style={{ backgroundColor: COLOR_SECUNDARIO, flex: 10, margin: 10}}>
             {renderUsuarios()}
           </div>
         </div>
       </div>
       <div style={{flex: 10}}>
         <div style={{ display: 'flex', flexDirection: 'column', height:790}}>
-          <div style={{ backgroundColor: 'black', borderRadius: 10, padding: 10, margin: 10, flex: 9 }}>
-            <textarea disabled={necesitaIdentificacion} style={{ width: '95%', height:'90%', borderRadius:10, margin: 20}} onChange={(evt) => actualizarTexto(evt.target.value)} value={texto} />
+          <div style={{ backgroundColor: COLOR_PRIMARIO, borderRadius: 10, padding: 10, margin: 10, flex: 9 }}>
+            <textarea disabled={necesitaIdentificacion} style={{ borderRadius: 10, margin: 20, height: '90%', width:'95%'}} onChange={(evt) => actualizarTexto(evt.target.value)} value={texto} />
           </div>
-          <div style={{ backgroundColor: 'black', borderRadius: 10, padding: 10, margin: 10, flex: 3 }}>
-            {renderMensajes()}
-            <input disabled={necesitaIdentificacion} style={{ marginLeft: 5, flex: 10, width: '87%' }} value={mensajeActual} onChange={(evt) => setMensajeActual(evt.target.value)} />
-            <button style={{ marginLeft: 10, flex: 2, width: '10%' }} onClick={() => enviarMensaje(mensajeActual)}>Enviar</button>
+          <div style={{ backgroundColor: COLOR_PRIMARIO, borderRadius: 10, padding: 10, margin: 10, flex: 3, display: 'flex', flexDirection: 'column', maxHeight:200}}>
+            <div style={{flex:11}}>
+              {renderMensajes()}
+            </div>
+            <div style={{ flex: 1}}>
+              <div style={{display: 'flex', flexDirection: 'row'}}>
+                <div style={{ flex: 10, margin: 10}}>
+                  <input disabled={necesitaIdentificacion} style={{ width:'100%'}} value={mensajeActual} onChange={(evt) => setMensajeActual(evt.target.value)} />
+                </div>
+                <div style={{flex:2, margin:10}}>
+                  <button style={{ width:'100%'}} onClick={() => enviarMensaje(mensajeActual)}>Enviar</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
-
-  return (
-    <div className="App">
-      <header className="App-header">
-
-        <div style={{ flex: 9 }}>
-          <p>Documento compartido</p>
-          <textarea disabled={necesitaIdentificacion} style={{ width: 800, height: 700, overflowY: 'scroll' }} onChange={(evt) => actualizarTexto(evt.target.value)} value={texto} />
-        </div>
-
-        <div style={{backgroundColor: 'white'}}>
-          {renderUsuarios()}
-        </div>
-
-        <div style={{ flex: 3 }}>
-          <p>Chat</p>
-          <div>
-            <div>{getNombre()}</div>
-            <BotonLogin />
-            <BotonLogout />
-            <button style={{ flex: 2, width: 100 }} onClick={() => identificar()}>Enviar</button>
-          </div>
-          {renderMensajes()}
-          <div>
-            <input disabled={necesitaIdentificacion} style={{ flex: 10, width: 400 }} value={mensajeActual} onChange={(evt) => setMensajeActual(evt.target.value)} />
-            <button style={{ flex: 2, width: 100 }} onClick={() => enviarMensaje(mensajeActual)}>Enviar</button>
-          </div>
-        </div>
-      </header>
-    </div>
-  );
-
-  return(
-    <div>
-
     </div>
   )
 }
