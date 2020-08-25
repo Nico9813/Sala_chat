@@ -10,6 +10,7 @@ ReactDOM.render(
     domain="dev-jx8fysvq.us.auth0.com"
     clientId="d0b0YU95Fq69C0QMovzgxjfv2oY5aXmT"
     redirectUri={window.location.origin}
+    audience="https://api-prello/v1"
   >
   <React.StrictMode>
     <App />
