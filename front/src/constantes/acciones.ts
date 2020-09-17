@@ -1,0 +1,4 @@
+export const CAMBIAR_TEXTO = "CAMBIAR_TEXTO";
+export const NUEVO_MENSAJE = "NUEVO_MENSAJE";
+export const NUEVO_USUARIO = "NUEVO_USUARIO";
+export const HANDSHAKE = "HANDSHAKE";
