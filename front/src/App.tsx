@@ -23,12 +23,10 @@ export const App = () => {
   const [usuariosActuales, setUsuariosActuales] = useState<Map<string, IDatosUsuario>>(new Map<string, IDatosUsuario>())
   const [mensajeActual, setMensajeActual] = useState<string>('')
 
-  const getNombre = () => isAuthenticated ? user.name : ''
-
   useEffect( () => {
     if(isAuthenticated){
-      client.send(JSON.stringify({ type: Acciones.HANDSHAKE, payload: { emisor: getNombre(), foto: user.picture } }))
-      agregarUsuario(getNombre(), user.picture)
+      client.send(JSON.stringify({ type: Acciones.HANDSHAKE, payload: { emisor: user.name, foto: user.picture } }))
+      agregarUsuario(user.name, user.picture)
     }
   }, [isAuthenticated])
 
@@ -42,7 +40,7 @@ export const App = () => {
     const data = mensajeParseado.payload;
     const type = mensajeParseado.type;
 
-    if (data.emisor !== getNombre()) {
+    if (data.emisor !== user?.name) {
       switch (type) {
         case Acciones.CAMBIAR_TEXTO:
           setTexto(data.data)
@@ -69,17 +67,17 @@ export const App = () => {
   }
 
   const enviarMensaje = (mensajeNuevo: string) => {
-    setMensajes([...mensajes, { emisor: getNombre(), contenido: mensajeNuevo }])
-    client.send(JSON.stringify({ type: Acciones.NUEVO_MENSAJE, payload: { emisor: getNombre(), data: mensajeNuevo } }))
+    setMensajes([...mensajes, { emisor: user.name, contenido: mensajeNuevo }])
+    client.send(JSON.stringify({ type: Acciones.NUEVO_MENSAJE, payload: { emisor: user.name, data: mensajeNuevo } }))
   }
 
   return (
     <div className='flex-container' style={{ backgroundColor: Colores.COLOR_PRIMARIO }}>
       <div style={{ flex: 2, height: '98vh', width: '100vw', margin: 10, borderRadius: 5 }}>
         <div className='flex-container' style={{ flexDirection: 'column', height: '100%' }}>
-          <div style={{ backgroundColor: Colores.COLOR_SECUNDARIO, flex: 2, margin: 10, borderRadius: 5 }}>
+          <div style={{ backgroundColor: Colores.COLOR_SECUNDARIO, flex: 1, margin: 10, borderRadius: 5 }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', justifyContent: 'center', margin: 10 }}>
-              <div style={{ flex: 6 }}>
+              <div style={{ flex: 8}}>
                 <div className='flex-container'>
                   <div style={{ flex: 6, alignItems: 'center', alignContent: 'center', justifyContent: 'center' }}>
                     {isAuthenticated && <img src={user.picture} height="35" width="35" style={{ borderRadius: 20, margin: 25 }} />}
@@ -89,7 +87,7 @@ export const App = () => {
                   </div>
                 </div>
               </div>
-              <div style={{ flex: 6 }}>
+              <div style={{ flex: 4 }}>
                 {isAuthenticated ?
                   <div>
                     <BotonLogout />
@@ -122,7 +120,7 @@ export const App = () => {
                   <input disabled={!isAuthenticated} style={{ width: '100%', margin: 5, padding: 5 }} value={mensajeActual} onChange={(evt) => setMensajeActual(evt.target.value)} />
                 </div>
                 <div style={{ flex: 2, margin: 10 }}>
-                  <button className="button" style={{ width: '90%' }} onClick={() => enviarMensaje(mensajeActual)}>Enviar</button>
+                  <button disabled={!isAuthenticated} className="button" style={{ width: '90%' }} onClick={() => enviarMensaje(mensajeActual)}>Enviar</button>
                 </div>
               </div>
             </div>

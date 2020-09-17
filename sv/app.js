@@ -27,13 +27,15 @@ wsServer.on('request', function (request) {
 
     connection.on('message', function (message) {
         const mensaje = JSON.parse(message.utf8Data);
-        console.log("[Mensaje recibido] - %s ( %s )", mensaje.type, JSON.stringify(mensaje.payload))
+        //console.log("[Mensaje recibido] - %s ( %s )", mensaje.type, JSON.stringify(mensaje.payload))
         if (mensaje.type == HANDSHAKE){
             clients.forEach((cliente) =>{
                 connection.send(JSON.stringify({ type: NUEVO_USUARIO, payload: { emisor: cliente.nombre, foto: cliente.foto } }))
             })
-            if (!clients.includes(mensaje.payload.emisor)) 
-                clients.push({nombre: mensaje.payload.emisor, foto: mensaje.payload.foto})
+            console.log(JSON.stringify(clients.map(client => client.nombre)))
+            if (!clients.map(client => client.nombre).includes(mensaje.payload.emisor)){
+                clients.push({ nombre: mensaje.payload.emisor, foto: mensaje.payload.foto })
+            }
             sendMessageExceptOrigin(JSON.stringify({ type: NUEVO_USUARIO, payload: mensaje.payload}))
         }else{
             sendMessageExceptOrigin(JSON.stringify({ type: mensaje.type, payload: mensaje.payload }), connection);

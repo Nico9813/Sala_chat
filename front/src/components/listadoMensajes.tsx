@@ -37,8 +37,6 @@ export const ListadoMensajes = (props : IpropListadoMensajes) => {
           }}>
           <b style={{marginLeft: 15}}>{mensaje.emisor}</b> :{mensaje.contenido}
         </div>
-        <hr style={{ color: 'black' }} />
-        <br style={{ color: 'black' }} />
       </div>
     )
   }
