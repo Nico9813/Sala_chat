@@ -10,9 +10,9 @@ export const ListadoUsuarios = (props: IpropListadoUsuarios) => {
 
   let usuariosRenderizables: Array<any> = []
   
-  props.usuariosActuales.forEach((datos : IDatosUsuario, usuario : string) => {
+  props.usuariosActuales.forEach((datos : IDatosUsuario) => {
     usuariosRenderizables.push(
-      <div key={usuario} style={{ display: 'flex', flexDirection: 'row', borderWidth: '1px' }}>
+      <div key={datos.nombre} style={{ display: 'flex', flexDirection: 'row', borderWidth: '1px' }}>
         <div className='usuario-conectado' style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', alignContent: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: datos?.color }}>
           <div style={{ flex: 2 }}>
             <div>
@@ -20,7 +20,7 @@ export const ListadoUsuarios = (props: IpropListadoUsuarios) => {
             </div>
           </div>
           <div style={{ flex: 10 }}>
-            <b style={{ color: 'black' }}>{usuario}</b>
+            <b style={{ color: 'black' }}>{datos.nombre}</b>
           </div>
         </div>
       </div>)

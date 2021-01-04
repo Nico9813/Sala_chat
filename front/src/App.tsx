@@ -11,7 +11,7 @@ import * as Colores from './constantes/color'
 import IMensaje from './tipos/mensajes'
 import IDatosUsuario from './tipos/datosUsuario'
 import { ListadoUsuarios } from './components/listadoUsuarios';
-import { ListadoMensajes } from './components/listadoMensajes';
+import { Chat } from './components/Chat';
 
 const client = new W3CWebSocket('ws://127.0.0.1:8000');
 
@@ -21,12 +21,11 @@ export const App = () => {
   const [mensajes, setMensajes] = useState<IMensaje[]>([])
   const { user, isAuthenticated } = useAuth0();
   const [usuariosActuales, setUsuariosActuales] = useState<Map<string, IDatosUsuario>>(new Map<string, IDatosUsuario>())
-  const [mensajeActual, setMensajeActual] = useState<string>('')
 
   useEffect( () => {
     if(isAuthenticated){
       client.send(JSON.stringify({ type: Acciones.HANDSHAKE, payload: { emisor: user.name, foto: user.picture } }))
-      agregarUsuario(user.name, user.picture)
+      agregarUsuario('0', user.name, user.picture)
     }
   }, [isAuthenticated])
 
@@ -37,28 +36,31 @@ export const App = () => {
   client.onmessage = (message) => {
     const mensajeParseado = JSON.parse(message.data.toString())
 
-    const data = mensajeParseado.payload;
-    const type = mensajeParseado.type;
+    console.log(mensajeParseado)
 
-    if (data.emisor !== user?.name) {
+    const data = mensajeParseado.payload;
+    const id = mensajeParseado.id
+    const type = mensajeParseado.type;
+    const emisor = usuariosActuales.get(id) ?? user;
+    
       switch (type) {
         case Acciones.CAMBIAR_TEXTO:
           setTexto(data.data)
           break
         case Acciones.NUEVO_MENSAJE:
-          setMensajes([...mensajes, { emisor: data.emisor, contenido: data.data }])
+          setMensajes([...mensajes, { emisor: emisor, contenido: data.data }])
           break;
         case Acciones.NUEVO_USUARIO:
-          agregarUsuario(data.emisor, data.foto)
+          agregarUsuario(id, data.emisor, data.foto)
           break;
       }
-    }
   };
 
-  const agregarUsuario = (nombre: string, foto: string) => {
-    usuariosActuales.set(nombre, { color: Colores.getProximoColor(), foto: foto })
+  const agregarUsuario = (id : string, nombre: string, foto: string) => {
+    const nuevo_usuario = { nombre: nombre, color: Colores.getProximoColor(), foto: foto }
+    usuariosActuales.set(id, nuevo_usuario)
     setUsuariosActuales(usuariosActuales)
-    setMensajes([...mensajes, { emisor: nombre, contenido: 'El usuario ' + nombre + ' se unio a la conversacion' }])
+    setMensajes([...mensajes, { emisor: nuevo_usuario, contenido: 'El usuario ' + nombre + ' se unio a la conversacion' }])
   }
 
   const actualizarTexto = (nuevoTexto: string) => {
@@ -67,8 +69,8 @@ export const App = () => {
   }
 
   const enviarMensaje = (mensajeNuevo: string) => {
-    setMensajes([...mensajes, { emisor: user.name, contenido: mensajeNuevo }])
-    client.send(JSON.stringify({ type: Acciones.NUEVO_MENSAJE, payload: { emisor: user.name, data: mensajeNuevo } }))
+    setMensajes([...mensajes, { emisor: usuariosActuales.get('0')?? user, contenido: mensajeNuevo }])
+    client.send(JSON.stringify({ type: Acciones.NUEVO_MENSAJE, payload: { data: mensajeNuevo } }))
   }
 
   return (
@@ -110,21 +112,7 @@ export const App = () => {
           <div className='flex-container' style={{ backgroundColor: Colores.COLOR_PRIMARIO, flex: 9, borderRadius: 5 }}>
             <textarea disabled={!isAuthenticated} style={{ backgroundColor: Colores.COLOR_SECUNDARIO, color: Colores.COLOR_FUENTE, margin: 15, padding: 15, height: '90%', width: '95%', borderRadius: 10 }} onChange={(evt) => actualizarTexto(evt.target.value)} value={texto} />
           </div>
-          <div className='flex-container' style={{ backgroundColor: Colores.COLOR_PRIMARIO, flex: 3, display: 'flex', flexDirection: 'column', maxHeight: '30vh' }}>
-            <div style={{ flex: 9 }}>
-              <ListadoMensajes usuariosActuales={usuariosActuales} mensajes={mensajes}/>
-            </div>
-            <div style={{ flex: 4 }}>
-              <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <div style={{ flex: 10, margin: 10 }}>
-                  <input disabled={!isAuthenticated} style={{ width: '100%', margin: 5, padding: 5 }} value={mensajeActual} onChange={(evt) => setMensajeActual(evt.target.value)} />
-                </div>
-                <div style={{ flex: 2, margin: 10 }}>
-                  <button disabled={!isAuthenticated} className="button" style={{ width: '90%' }} onClick={() => enviarMensaje(mensajeActual)}>Enviar</button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <Chat enviarMensaje={enviarMensaje} mensajes={mensajes} isAuthenticated={isAuthenticated}></Chat>
         </div>
       </div>
     </div>

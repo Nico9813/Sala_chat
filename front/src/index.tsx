@@ -8,7 +8,7 @@ import { Auth0Provider } from "@auth0/auth0-react";
 ReactDOM.render(
   <Auth0Provider
     domain="dev-jx8fysvq.us.auth0.com"
-    clientId="d0b0YU95Fq69C0QMovzgxjfv2oY5aXmT"
+    clientId="1LQIuHss6A2GrsKIze9hjAN5ZdHJmBHP"
     redirectUri={window.location.origin}
     audience="https://api-prello/v1"
   >

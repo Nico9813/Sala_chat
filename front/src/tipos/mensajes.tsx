@@ -1,4 +1,6 @@
+import IDatosUsuario from "./datosUsuario";
+
 export default interface IMensaje {
-    emisor: string,
+    emisor: IDatosUsuario,
     contenido: string
 }
